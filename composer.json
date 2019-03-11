@@ -1,0 +1,22 @@
+{
+    "name": "ailose/exception-alert",
+    "description": "errors alert for developers;",
+    "type": "library",
+    "require": {
+        "php": ">=7.0",
+        "wangju/ding-notice": "^1.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ailose",
+            "email": "hy1874@qq.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "ExceptionAlert\\": "src/"
+        }
+    }
+}
