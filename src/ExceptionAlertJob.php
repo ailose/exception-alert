@@ -140,7 +140,7 @@ class ExceptionAlertJob implements ShouldQueue
                 ); break;
         }
         try {
-            ding()->text($message);
+            ding()->markdown(config('app.name')."告警", $message);
         } catch (\Exception $exception) {
             logger($exception->getMessage());
         }
