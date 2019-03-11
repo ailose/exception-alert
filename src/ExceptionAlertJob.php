@@ -125,7 +125,7 @@ class ExceptionAlertJob implements ShouldQueue
                     config('app.name'),
                     $this->url,
                     "$this->exception(code:$this->code): $this->message at $this->file:$this->line",
-                    config('app.developers')
+                    config('ding.DING_WORKERS')
                 ); break;
             default:
                 $message = sprintf($this->template[$this->mode],
@@ -136,7 +136,7 @@ class ExceptionAlertJob implements ShouldQueue
                     $this->url,
                     "$this->exception(code:$this->code): $this->message at $this->file:$this->line",
                     $this->trace,
-                    config('app.developers')
+                    config('ding.DING_WORKERS')
                 ); break;
         }
         try {
