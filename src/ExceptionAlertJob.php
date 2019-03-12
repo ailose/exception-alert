@@ -53,35 +53,39 @@ class ExceptionAlertJob implements ShouldQueue
      * @var array
      */
     private $template = [
-        'simple' => "### %s
+        'simple' => "#### %s
 ##### 时间：
-- %s
+> %s
 ##### 环境：
-- %s
+> %s
 ##### 项目：
-- %s
+> %s
 ##### 链接：
-- %s
+> %s
+##### 请求参数：
+> %s
 ##### 异常：
-- %s
+> %s
 ##### 负责人：
-- %s
+  %s
 ",
-        'normal' => "### %s
+        'normal' => "#### %s
 ##### 时间：
-- %s
+> %s
 ##### 环境：
-- %s
+> %s
 ##### 项目：
-- %s
+> %s
 ##### 链接：
-- %s
+> %s
+##### 请求参数：
+> %s
 ##### 异常：
-- %s
+> %s
 ##### 调试：
-- %s
+> %s
 ##### 负责人：
-- %s
+  %s
 "
     ];
 
@@ -106,7 +110,7 @@ class ExceptionAlertJob implements ShouldQueue
         $this->url = $url;
         $this->trace =  $trace;
         $this->exception = $exception;
-        $this->mode = $mode;
+        $this->mode = config('ding.DING_SIMPLE')??'normal';
     }
 
     /**
@@ -116,31 +120,41 @@ class ExceptionAlertJob implements ShouldQueue
      */
     public function handle()
     {
+        $data = request()->request->all();
+        $data = $data ? json_encode($data) : "无参数";
+        $developers = explode(',', config('ding.DING_WORKERS'));
+        $developers_str = "";
+        foreach ($developers as $developer) {
+            $developers_str .= "@{$developer} ";
+        }
+        $title = config('ding.DING_TITLE')??'错误异常';
         switch ($this->mode) {
             case 'simple':
                 $message = sprintf($this->template[$this->mode],
-                    config('app.name')."告警",
+                    $title,
                     Carbon::now()->toDateTimeString(),
                     config('app.env'),
                     config('app.name'),
                     $this->url,
+                    $data,
                     "$this->exception(code:$this->code): $this->message at $this->file:$this->line",
-                    config('ding.DING_WORKERS')
+                    $developers_str
                 ); break;
             default:
                 $message = sprintf($this->template[$this->mode],
-                    config('app.name')."告警",
+                    $title,
                     Carbon::now()->toDateTimeString(),
                     config('app.env'),
                     config('app.name'),
                     $this->url,
+                    $data,
                     "$this->exception(code:$this->code): $this->message at $this->file:$this->line",
                     $this->trace,
-                    config('ding.DING_WORKERS')
+                    $developers_str
                 ); break;
         }
         try {
-            ding()->markdown(config('app.name')."告警", $message);
+            ding()->at($developers)->markdown($title,  $message);
         } catch (\Exception $exception) {
             logger($exception->getMessage());
         }
