@@ -48,10 +48,26 @@ publish the config file:
 
 ### 配置
 
-config/app.php 
+config/ding.php 
 ```
-    'developers' => '@小明'
+        'DING_SIMPLE' => env('DING_SIMPLE'),
+        'DING_TITLE' => env('DING_TITLE'),
+        'DING_WORKERS' => env('DING_WORKERS'),
 ```
+
+.env
+
+```
+#dingding
+
+DING_ENABLED=true
+DING_TOKEN=your token
+DING_TIME_OUT=2.0
+DING_SIMPLE=simple  #(or normal)
+DING_WORKERS=phone numbers #(155xxx,156xxx 多个号码逗号隔开)   
+
+```
+
 
 app/Exceptions/Handler.php
 添加
