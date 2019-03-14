@@ -34,6 +34,10 @@ class ExceptionAlertJob implements ShouldQueue
     /**
      * @var
      */
+    private $params_content;
+    /**
+     * @var
+     */
     private $url;
     /**
      * @var
@@ -98,19 +102,21 @@ class ExceptionAlertJob implements ShouldQueue
      * @param $code
      * @param $file
      * @param $line
+     * @param $params_content ,
      * @param $trace
      * @param $mode
      */
-    public function __construct($url, $exception, $message, $code, $file, $line, $trace, $mode = "normal")
+    public function __construct($url, $exception, $message, $code, $file, $line, $params_content, $trace, $mode = "normal")
     {
         $this->message = $message;
         $this->code = $code;
         $this->file = $file;
         $this->line = $line;
+        $this->params_content = $params_content;
         $this->url = $url;
-        $this->trace =  $trace;
+        $this->trace = $trace;
         $this->exception = $exception;
-        $this->mode = config('ding.DING_SIMPLE')??'normal';
+        $this->mode = config('ding.DING_SIMPLE') ?? 'normal';
     }
 
     /**
@@ -120,14 +126,12 @@ class ExceptionAlertJob implements ShouldQueue
      */
     public function handle()
     {
-        $data = request()->request->all();
-        $data = $data ? json_encode($data) : "无参数";
         $developers = explode(',', config('ding.DING_WORKERS'));
         $developers_str = "";
         foreach ($developers as $developer) {
             $developers_str .= "@{$developer} ";
         }
-        $title = config('ding.DING_TITLE')??'错误异常';
+        $title = config('ding.DING_TITLE') ?? '错误异常';
         switch ($this->mode) {
             case 'simple':
                 $message = sprintf($this->template[$this->mode],
@@ -136,10 +140,11 @@ class ExceptionAlertJob implements ShouldQueue
                     config('app.env'),
                     config('app.name'),
                     $this->url,
-                    $data,
+                    $this->params_content,
                     "$this->exception(code:$this->code): $this->message at $this->file:$this->line",
                     $developers_str
-                ); break;
+                );
+                break;
             default:
                 $message = sprintf($this->template[$this->mode],
                     $title,
@@ -147,14 +152,15 @@ class ExceptionAlertJob implements ShouldQueue
                     config('app.env'),
                     config('app.name'),
                     $this->url,
-                    $data,
+                    $this->params_content,
                     "$this->exception(code:$this->code): $this->message at $this->file:$this->line",
                     $this->trace,
                     $developers_str
-                ); break;
+                );
+                break;
         }
         try {
-            ding()->at($developers)->markdown($title,  $message);
+            ding()->at($developers)->markdown($title, $message);
         } catch (\Exception $exception) {
             logger($exception->getMessage());
         }

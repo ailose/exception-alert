@@ -13,6 +13,8 @@ class ExceptionAlertHelper
      */
     public static function notify($exception, $mode = "normal")
     {
+        $data = request()->request->all();
+        $params_content = $data ? json_encode($data) : "无参数";
         ExceptionAlertJob::dispatch(
             \request()->fullUrl(),
             get_class($exception),
@@ -20,6 +22,7 @@ class ExceptionAlertHelper
             $exception->getCode(),
             $exception->getFile(),
             $exception->getLine(),
+            $params_content,
             $exception->getTraceAsString(),
             $mode
         );
